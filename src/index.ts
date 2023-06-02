@@ -64,24 +64,18 @@ const sendNotification = async (
 
 	var embed: discord.APIEmbed | undefined = undefined;
 
-	if (!actual && !old.offline) {
-		// server is newly offline
+	if (!actual !== old.offline) {
+		// the server has gone online/offline
 		embed = {
-			color: 0xff0000,
-			title: `The server has gone offline!`,
-			description: name,
-		};
-	} else if (actual && old.offline) {
-		// server is newly online
-		embed = {
-			color: 0x00ff00,
-			title: "The server has come online!",
+			color: !!actual ? 0x00ff00 : 0xff0000,
+			title: `The server has gone ${!!actual ? "online" : "offline"}!`,
 			description: name,
 		};
 	} else if (!actual) return;
 	else if (actual.players != old.players) {
+		// player count has changed
 		embed = {
-			color: 0x0000ff,
+			color: actual.players > old.players! ? 0x0000ff : 0x00ffff,
 			title: `${actual.players}/${actual.max_players} : A player has ${
 				actual.players > old.players! ? "joined" : "left"
 			} the server`,
@@ -91,9 +85,10 @@ const sendNotification = async (
 			},
 		};
 	} else if (actual.map != old.map) {
+		// map has changed
 		embed = {
-			color: 0x00ffff,
-			title: `The server has changed map`,
+			color: 0xff00ff,
+			title: `${actual.players}/${actual.max_players} : The server has changed map`,
 			description: `Now playing: \`${actual.map}\``,
 			footer: {
 				text: name,
