@@ -1,0 +1,33 @@
+{
+  "name": "serverstatsbot",
+  "version": "1.0.0",
+  "description": "Discord bot for monitoring game servers through steam ",
+  "main": "build/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc -b",
+    "start": "node build/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MaddyUnderStars/ServerStatsBot.git"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "steam",
+    "server"
+  ],
+  "author": "MaddyUnderStars",
+  "license": "AGPL-3.0-only",
+  "bugs": {
+    "url": "https://github.com/MaddyUnderStars/ServerStatsBot/issues"
+  },
+  "homepage": "https://github.com/MaddyUnderStars/ServerStatsBot#readme",
+  "type": "module",
+  "dependencies": {
+    "discord.js": "^14.11.0",
+    "dotenv": "^16.1.3",
+    "node-fetch": "^3.3.1"
+  }
+}
