@@ -98,7 +98,7 @@ const sendNotification = async (
 				text: name,
 			},
 		};
-	} else if (actual.map != old.map && actual.players > 0) {
+	} else if (actual.map != old.map && (actual.players > 0)) {
 		// map has changed
 		embed = {
 			color: 0xff00ff,
