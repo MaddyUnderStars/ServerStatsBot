@@ -12,13 +12,17 @@ const serverCache = new Map<string, ServerCache>();
 
 const client = new discord.Client({ intents: [] });
 
-client.on("ready", () => {
+client.on("ready", async () => {
 	console.log(`Ready as ${client.user?.username}`);
 
-	checkServers();
-});
+	const channel = (await client.channels.fetch(
+		process.env.CHANNEL as string,
+	)) as discord.TextChannel;
 
-client.on("message", (msg) => {
+	// cause why not
+	await channel.bulkDelete(50);
+
+	checkServers();
 });
 
 client.login(process.env.DISCORD_TOKEN);
@@ -28,11 +32,16 @@ const getServer = async (addr: string): Promise<SteamServer | undefined> => {
 	url.searchParams.append("key", process.env.STEAM_TOKEN as string);
 	url.searchParams.append("filter", `addr\\${addr}`);
 
-	const json = (await fetch(url).then((res) =>
-		res.json(),
-	)) as GetServerListResponse;
+	try {
+		const json = (await fetch(url).then((res) =>
+			res.json(),
+		)) as GetServerListResponse;
 
-	return json.response?.servers?.[0];
+		return json.response?.servers?.[0];
+	} catch (e) {
+		console.error(e);
+		return undefined;
+	}
 };
 
 const checkServers = async () => {
@@ -98,7 +107,7 @@ const sendNotification = async (
 				text: name,
 			},
 		};
-	} else if (actual.map != old.map && (actual.players > 0)) {
+	} else if (actual.map != old.map && actual.players > 0) {
 		// map has changed
 		embed = {
 			color: 0xff00ff,
