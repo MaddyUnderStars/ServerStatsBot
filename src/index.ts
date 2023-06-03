@@ -18,6 +18,9 @@ client.on("ready", () => {
 	checkServers();
 });
 
+client.on("message", (msg) => {
+});
+
 client.login(process.env.DISCORD_TOKEN);
 
 const getServer = async (addr: string): Promise<SteamServer | undefined> => {
@@ -56,7 +59,10 @@ const checkServers = async () => {
 				await cache.currentMessage.edit({ embeds: [embed] });
 			else cache.currentMessage = await channel.send({ embeds: [embed] });
 
-			if (!ret || ret.players == 0) cache.currentMessage = undefined;
+			if (!ret || ret.players == 0) {
+				await cache.currentMessage.delete();
+				cache.currentMessage = undefined;
+			}
 		}
 
 		serverCache.set(server, { ...cache, ...ret });
@@ -92,7 +98,7 @@ const sendNotification = async (
 				text: name,
 			},
 		};
-	} else if (actual.map != old.map) {
+	} else if (actual.map != old.map && actual.players > 0) {
 		// map has changed
 		embed = {
 			color: 0xff00ff,
