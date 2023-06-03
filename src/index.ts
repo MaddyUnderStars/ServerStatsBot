@@ -33,21 +33,33 @@ const getServer = async (addr: string): Promise<SteamServer | undefined> => {
 };
 
 const checkServers = async () => {
+	const channel = (await client.channels.fetch(
+		process.env.CHANNEL as string,
+	)) as discord.TextChannel;
+
 	for (var i = 0; i < SERVERS.length; i++) {
-		var server = SERVERS[i];
+		let server = SERVERS[i];
 
 		const ret = await getServer(server);
 
-		var cache = serverCache.get(server);
-		serverCache.set(
-			server,
-			!!ret ? { ...ret, offline: false } : { offline: true },
-		);
-		if (!cache) continue;
+		if (!serverCache.has(server))
+			serverCache.set(server, { ...ret, offline: !ret });
 
-		var alias = cache.name || server;
+		let cache: ServerCache = serverCache.get(server)!;
 
-		await sendNotification(alias, cache, ret);
+		let alias = cache.name ?? server;
+
+		let embed = await sendNotification(alias, cache, ret);
+
+		if (embed) {
+			if (cache.currentMessage)
+				await cache.currentMessage.edit({ embeds: [embed] });
+			else cache.currentMessage = await channel.send({ embeds: [embed] });
+
+			if (!ret || ret.players == 0) cache.currentMessage = undefined;
+		}
+
+		serverCache.set(server, { ...cache, ...ret });
 	}
 
 	setTimeout(checkServers, parseInt(process.env.INTERVAL as string));
@@ -58,11 +70,7 @@ const sendNotification = async (
 	old: ServerCache,
 	actual?: SteamServer,
 ) => {
-	const channel = (await client.channels.fetch(
-		process.env.CHANNEL as string,
-	)) as discord.TextChannel;
-
-	var embed: discord.APIEmbed | undefined = undefined;
+	let embed: discord.APIEmbed | undefined = undefined;
 
 	if (!actual !== old.offline) {
 		// the server has gone online/offline
@@ -96,8 +104,7 @@ const sendNotification = async (
 		};
 	}
 
-	if (!embed) return;
-	await channel.send({ embeds: [embed] });
+	return embed;
 };
 
 interface GetServerListResponse {
