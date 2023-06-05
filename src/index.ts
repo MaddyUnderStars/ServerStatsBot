@@ -53,7 +53,6 @@ const checkServers = async () => {
 		let server = SERVERS[i];
 
 		const ret = await getServer(server);
-		if (!ret) return;
 
 		if (!serverCache.has(server))
 			serverCache.set(server, { ...ret, offline: !ret });
@@ -69,7 +68,7 @@ const checkServers = async () => {
 				await cache.currentMessage.edit({ embeds: [embed] });
 			else cache.currentMessage = await channel.send({ embeds: [embed] });
 
-			if (ret.players == 0) {
+			if (!ret || ret.players == 0) {
 				await cache.currentMessage.delete();
 				cache.currentMessage = undefined;
 			}
@@ -84,9 +83,11 @@ const checkServers = async () => {
 const sendNotification = async (
 	name: string,
 	old: ServerCache,
-	actual: SteamServer,
+	actual?: SteamServer,
 ) => {
 	let embed: discord.APIEmbed | undefined = undefined;
+
+	if (!actual) return;
 
 	// if (!actual !== old.offline) {
 	// 	// the server has gone online/offline
