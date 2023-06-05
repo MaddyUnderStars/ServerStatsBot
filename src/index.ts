@@ -53,6 +53,7 @@ const checkServers = async () => {
 		let server = SERVERS[i];
 
 		const ret = await getServer(server);
+		if (!ret) return;
 
 		if (!serverCache.has(server))
 			serverCache.set(server, { ...ret, offline: !ret });
@@ -68,7 +69,7 @@ const checkServers = async () => {
 				await cache.currentMessage.edit({ embeds: [embed] });
 			else cache.currentMessage = await channel.send({ embeds: [embed] });
 
-			if (!ret || ret.players == 0) {
+			if (ret.players == 0) {
 				await cache.currentMessage.delete();
 				cache.currentMessage = undefined;
 			}
@@ -83,19 +84,19 @@ const checkServers = async () => {
 const sendNotification = async (
 	name: string,
 	old: ServerCache,
-	actual?: SteamServer,
+	actual: SteamServer,
 ) => {
 	let embed: discord.APIEmbed | undefined = undefined;
 
-	if (!actual !== old.offline) {
-		// the server has gone online/offline
-		embed = {
-			color: !!actual ? 0x00ff00 : 0xff0000,
-			title: `The server has gone ${!!actual ? "online" : "offline"}!`,
-			description: name,
-		};
-	} else if (!actual) return;
-	else if (actual.players != old.players) {
+	// if (!actual !== old.offline) {
+	// 	// the server has gone online/offline
+	// 	embed = {
+	// 		color: !!actual ? 0x00ff00 : 0xff0000,
+	// 		title: `The server has gone ${!!actual ? "online" : "offline"}!`,
+	// 		description: name,
+	// 	};
+	// } else if (!actual) return;
+	if (actual.players != old.players) {
 		// player count has changed
 		embed = {
 			color: actual.players > old.players! ? 0x0000ff : 0x00ffff,
